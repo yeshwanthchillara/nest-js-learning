@@ -1,4 +1,10 @@
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUUID,
+} from 'class-validator';
 import { TaskStatus } from '../../types/tasks/tasks.enum';
 
 export class TaskDto {
@@ -29,19 +35,25 @@ export class CreateTaskDto {
 }
 
 export class UpdateTaskDto {
-  @IsNotEmpty()
-  @IsUUID()
-  id!: string;
-
+  @IsOptional()
   @IsString()
   title?: string;
 
+  @IsOptional()
   @IsString()
   description?: string;
 
+  @IsOptional()
   @IsEnum(TaskStatus, {
     message:
       'Status must be one of the following values: pending, in_progress, completed',
   })
   status?: TaskStatus;
+}
+
+export class TaskIdParamDto {
+  @IsUUID('4', {
+    message: 'Invalid UUID format',
+  })
+  id!: string;
 }

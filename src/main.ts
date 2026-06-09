@@ -13,6 +13,7 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
       transform: true,
       exceptionFactory: (errors) => {
+        console.log('Validation errors:', errors);
         const formattedErrors = errors.map((error) => ({
           field: error.property,
           errors: error.constraints ? Object.values(error.constraints) : [],
