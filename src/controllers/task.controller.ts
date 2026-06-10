@@ -9,10 +9,11 @@ import {
   InternalServerErrorException,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
-import { TaskService } from '../../services/task/task.service';
-import { CreateTaskDto, UpdateTaskDto } from '../../dto/tasks/tasks.dto';
-import { UuidValidationPipe } from '../../common/pipes/uuid-validation.pipe';
+import { TaskService } from '../services/task.service';
+import { CreateTaskDto, TaskQueryDto, UpdateTaskDto } from '../dto/tasks.dto';
+import { UuidValidationPipe } from '../common/pipes/uuid-validation.pipe';
 
 @Controller('tasks')
 export class TaskController {
@@ -29,7 +30,18 @@ export class TaskController {
     };
   }
 
-  @Get(':id')
+  @Get('/filter')
+  @HttpCode(HttpStatus.OK)
+  async filterTasks(@Query() filterDto: TaskQueryDto) {
+    const filteredTasks = await this.tasksService.filterTasks(filterDto);
+    return {
+      success: true,
+      message: 'Tasks filtered successfully',
+      data: filteredTasks,
+    };
+  }
+
+  @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async getTask(@Param('id', UuidValidationPipe) id: string) {
     const task = await this.tasksService.getTaskById(id);

@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Task } from '../../entities/tasks/task.entity';
-import { CreateTaskDto, UpdateTaskDto } from '../../dto/tasks/tasks.dto';
-import { TaskStatus } from '../../types/tasks/tasks.enum';
+import { Task } from '../entities/task.entity';
+import { CreateTaskDto, TaskQueryDto, UpdateTaskDto } from '../dto/tasks.dto';
+import { TaskStatus } from '../types/tasks.enum';
 
 @Injectable()
 export class TaskService {
@@ -57,5 +57,23 @@ export class TaskService {
         message: 'Task not found with the id: ' + id,
       });
     }
+  }
+
+  async filterTasks(filterDto: TaskQueryDto): Promise<Task[]> {
+    const query = this.taskRepository.createQueryBuilder('task');
+    if (filterDto.status) {
+      query.andWhere('task.status = :status', { status: filterDto.status });
+    }
+    if (filterDto.title) {
+      query.andWhere('task.title ILIKE :title', {
+        title: `%${filterDto.title}%`,
+      });
+    }
+    if (filterDto.description) {
+      query.andWhere('task.description ILIKE :description', {
+        description: `%${filterDto.description}%`,
+      });
+    }
+    return await query.getMany();
   }
 }
