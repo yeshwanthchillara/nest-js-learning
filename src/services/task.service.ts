@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Task } from '../entities/task.entity';
 import { CreateTaskDto, TaskQueryDto, UpdateTaskDto } from '../dto/tasks.dto';
 import { TaskStatus } from '../types/tasks.enum';
+import { decode } from 'jsonwebtoken';
 
 @Injectable()
 export class TaskService {
@@ -12,8 +13,12 @@ export class TaskService {
     private readonly taskRepository: Repository<Task>,
   ) {}
 
-  async getAllTasks(): Promise<Task[]> {
-    return await this.taskRepository.find({});
+  async getAllTasks(currentUserId: string): Promise<Task[]> {
+    return await this.taskRepository.find({
+      where: {
+        createdById: currentUserId,
+      },
+    });
   }
 
   async getTaskById(id: string): Promise<Task> {
@@ -27,11 +32,17 @@ export class TaskService {
     return task;
   }
 
-  async createTask(createTaskDto: CreateTaskDto): Promise<Task> {
+  async createTask(
+    createTaskDto: CreateTaskDto,
+    authToken: string,
+  ): Promise<Task> {
+    const userId = this.extractUserIdFromAuthToken(authToken);
     const taskData = {
       title: createTaskDto.title,
       description: createTaskDto.description,
       status: TaskStatus.PENDING,
+      priority: createTaskDto.priority,
+      createdById: userId,
     };
     const task = this.taskRepository.create(taskData);
     return await this.taskRepository.save(task);
@@ -59,21 +70,62 @@ export class TaskService {
     }
   }
 
-  async filterTasks(filterDto: TaskQueryDto): Promise<Task[]> {
-    const query = this.taskRepository.createQueryBuilder('task');
-    if (filterDto.status) {
-      query.andWhere('task.status = :status', { status: filterDto.status });
-    }
-    if (filterDto.title) {
-      query.andWhere('task.title ILIKE :title', {
-        title: `%${filterDto.title}%`,
+  async filterTasks(
+    filterDto: TaskQueryDto,
+    currentUserId: string,
+  ): Promise<Task[]> {
+    const {
+      title,
+      description,
+      status,
+      priority,
+      dueDate,
+      sortKey,
+      sortOrder,
+    } = filterDto;
+    const tasks: Task[] = await this.taskRepository.query(
+      `
+      SELECT *
+      FROM filter_or_sort_tasks(
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7,
+        $8
+      )
+      `,
+      [
+        currentUserId,
+        status ?? null,
+        title ?? null,
+        description ?? null,
+        priority ?? null,
+        dueDate ?? null,
+        sortKey ?? 'createdAt',
+        sortOrder ?? 'DESC',
+      ],
+    );
+    return tasks;
+  }
+
+  extractUserIdFromAuthToken(authToken: string): string {
+    const tokenParts = authToken.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+      throw new NotFoundException({
+        success: false,
+        message: 'Invalid authorization token format',
       });
     }
-    if (filterDto.description) {
-      query.andWhere('task.description ILIKE :description', {
-        description: `%${filterDto.description}%`,
-      });
+    const decoded = decode(tokenParts[1]);
+    if (decoded && typeof decoded === 'object' && 'id' in decoded) {
+      return decoded.id as string;
     }
-    return await query.getMany();
+    throw new NotFoundException({
+      success: false,
+      message: 'Invalid authorization token',
+    });
   }
 }

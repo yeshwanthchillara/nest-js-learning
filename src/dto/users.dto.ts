@@ -1,4 +1,12 @@
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import { UserRoles } from '../types/user.enum';
 
 export class UserDto {
@@ -12,21 +20,40 @@ export class UserDto {
   username!: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsEmail()
   email!: string;
 }
 
 export class CreateUserDto {
-  @IsNotEmpty()
-  @IsString()
+  @IsString({
+    message: 'Username must be a string',
+  })
+  @IsNotEmpty({
+    message: 'Username is required',
+  })
+  @MinLength(6, {
+    message: 'Username must be at least 6 characters',
+  })
+  @MaxLength(20, {
+    message: 'Username cannot exceed 20 characters',
+  })
   username!: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsEmail(
+    {},
+    {
+      message: 'Invalid email format',
+    },
+  )
   email!: string;
 
-  @IsNotEmpty()
-  @IsString()
+  @IsNotEmpty({
+    message: 'Password is required',
+  })
+  @IsString({
+    message: 'Invalid Password format',
+  })
   password!: string;
 
   @IsNotEmpty()
@@ -34,4 +61,28 @@ export class CreateUserDto {
     message: 'Role must be either admin or user',
   })
   role?: UserRoles;
+}
+
+export class LoginUserDto {
+  @IsString({
+    message: 'Username must be a string',
+  })
+  @IsNotEmpty({
+    message: 'Username is required',
+  })
+  @MinLength(6, {
+    message: 'Username must be at least 6 characters',
+  })
+  @MaxLength(20, {
+    message: 'Username cannot exceed 20 characters',
+  })
+  username!: string;
+
+  @IsNotEmpty({
+    message: 'Password is required',
+  })
+  @IsString({
+    message: 'Invalid Password format',
+  })
+  password!: string;
 }

@@ -10,19 +10,30 @@ import {
   Patch,
   Delete,
   Query,
+  Headers,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { TaskService } from '../services/task.service';
 import { CreateTaskDto, TaskQueryDto, UpdateTaskDto } from '../dto/tasks.dto';
 import { UuidValidationPipe } from '../common/pipes/uuid-validation.pipe';
+import { AuthGuard } from '../guards/tokenValidation.guard';
+import { TaskOwnerGuard } from '../guards/taskOwner.guard';
+import { AuthenticatedRequest } from '../types/authenticated-request.types';
 
+@UseGuards(AuthGuard)
 @Controller('tasks')
 export class TaskController {
   constructor(private readonly tasksService: TaskService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  async getTasks() {
-    const allTasks = await this.tasksService.getAllTasks();
+  async getTasks(
+    @Req()
+    req: AuthenticatedRequest,
+  ) {
+    const currentUserId = req.user.id;
+    const allTasks = await this.tasksService.getAllTasks(currentUserId);
     return {
       success: true,
       message: 'Tasks retrieved successfully',
@@ -32,8 +43,16 @@ export class TaskController {
 
   @Get('/filter')
   @HttpCode(HttpStatus.OK)
-  async filterTasks(@Query() filterDto: TaskQueryDto) {
-    const filteredTasks = await this.tasksService.filterTasks(filterDto);
+  async filterTasks(
+    @Query() filterDto: TaskQueryDto,
+    @Req()
+    req: AuthenticatedRequest,
+  ) {
+    const currentUserId = req.user.id;
+    const filteredTasks = await this.tasksService.filterTasks(
+      filterDto,
+      currentUserId,
+    );
     return {
       success: true,
       message: 'Tasks filtered successfully',
@@ -41,6 +60,7 @@ export class TaskController {
     };
   }
 
+  @UseGuards(TaskOwnerGuard)
   @Get('/:id')
   @HttpCode(HttpStatus.OK)
   async getTask(@Param('id', UuidValidationPipe) id: string) {
@@ -54,8 +74,12 @@ export class TaskController {
 
   @Post('/create')
   @HttpCode(HttpStatus.CREATED)
-  async createTask(@Body() body: CreateTaskDto) {
-    const task = await this.tasksService.createTask(body);
+  async createTask(
+    @Body() body: CreateTaskDto,
+    @Headers('authorization')
+    authHeader: string,
+  ) {
+    const task = await this.tasksService.createTask(body, authHeader);
     if (task) {
       return {
         success: true,
@@ -70,13 +94,13 @@ export class TaskController {
     }
   }
 
+  @UseGuards(TaskOwnerGuard)
   @Patch('/update/:id')
   @HttpCode(HttpStatus.OK)
   async updateTask(
     @Param('id', UuidValidationPipe) id: string,
     @Body() body: UpdateTaskDto,
   ) {
-    console.log('Received update data:', body);
     const task = await this.tasksService.updateTask(id, body);
     if (task) {
       return {
@@ -92,6 +116,7 @@ export class TaskController {
     }
   }
 
+  @UseGuards(TaskOwnerGuard)
   @Delete('delete/:id')
   @HttpCode(HttpStatus.OK)
   async deleteTask(@Param('id', UuidValidationPipe) id: string) {

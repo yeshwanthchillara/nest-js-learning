@@ -55,7 +55,7 @@ export class Task {
 
   @Column({
     type: 'timestamptz',
-    nullable: false,
+    nullable: true,
   })
   dueDate?: Date;
 

@@ -8,7 +8,12 @@ import {
   MaxLength,
   MinLength,
 } from 'class-validator';
-import { TaskPriority, TaskStatus } from '../types/tasks.enum';
+import {
+  SortOrder,
+  TaskPriority,
+  TaskSortKey,
+  TaskStatus,
+} from '../types/tasks.enum';
 
 export class TaskDto {
   @IsOptional()
@@ -107,6 +112,31 @@ export class CreateTaskDto {
 
   @IsString()
   description!: string;
+
+  @IsEnum(TaskStatus, {
+    message:
+      'Status must be one of the following values: pending, in_progress, completed',
+  })
+  status!: TaskStatus;
+
+  @IsOptional()
+  @IsEnum(TaskPriority, {
+    message:
+      'Priority must be one of the following values: low, medium, high, critical',
+  })
+  priority?: TaskPriority;
+
+  @IsOptional()
+  @IsDateString(
+    {
+      strict: true,
+      strictSeparator: true,
+    },
+    {
+      message: 'Due date must be a valid UTC timestamp',
+    },
+  )
+  dueDate?: string;
 }
 
 export class UpdateTaskDto {
@@ -124,6 +154,25 @@ export class UpdateTaskDto {
       'Status must be one of the following values: pending, in_progress, completed',
   })
   status?: TaskStatus;
+
+  @IsOptional()
+  @IsEnum(TaskPriority, {
+    message:
+      'Priority must be one of the following values: low, medium, high, critical',
+  })
+  priority?: TaskPriority;
+
+  @IsOptional()
+  @IsDateString(
+    {
+      strict: true,
+      strictSeparator: true,
+    },
+    {
+      message: 'Due date must be a valid UTC timestamp',
+    },
+  )
+  dueDate?: string;
 }
 
 export class TaskIdParamDto {
@@ -145,4 +194,28 @@ export class TaskQueryDto {
   @IsOptional()
   @IsEnum(TaskStatus)
   status?: TaskStatus;
+
+  @IsOptional()
+  @IsEnum(TaskPriority)
+  priority?: TaskPriority;
+
+  @IsOptional()
+  @IsDateString(
+    {
+      strict: true,
+      strictSeparator: true,
+    },
+    {
+      message: 'Due date must be a valid UTC timestamp',
+    },
+  )
+  dueDate?: string;
+
+  @IsOptional()
+  @IsEnum(TaskSortKey)
+  sortKey?: TaskSortKey;
+
+  @IsOptional()
+  @IsEnum(SortOrder)
+  sortOrder?: SortOrder;
 }

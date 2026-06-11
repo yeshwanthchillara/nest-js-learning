@@ -10,3 +10,18 @@ export enum TaskPriority {
   HIGH = 'high',
   critical = 'critical',
 }
+
+export enum TaskSortKey {
+  TITLE = 'title',
+  DESCRIPTION = 'description',
+  STATUS = 'status',
+  PRIORITY = 'priority',
+  DUE_DATE = 'dueDate',
+  CREATED_AT = 'createdAt',
+  UPDATED_AT = 'updatedAt',
+}
+
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
