@@ -40,7 +40,7 @@ import { CpuModule } from './modules/cpu.module';
 
     TaskModule,
     UserModule,
-    CpuModule
+    CpuModule,
   ],
 })
 export class AppModule implements NestModule {
