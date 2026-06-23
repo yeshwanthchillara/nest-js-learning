@@ -10,6 +10,7 @@ import { TaskModule } from './modules/task.module';
 import { UserModule } from './modules/user.module';
 import authConfig from './config/auth.config';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { CpuModule } from './modules/cpu.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
 
     TaskModule,
     UserModule,
+    CpuModule
   ],
 })
 export class AppModule implements NestModule {
