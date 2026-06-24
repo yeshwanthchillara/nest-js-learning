@@ -5,11 +5,11 @@ metadata:
   name: task-management-config
 
 data:
-  PORT: "3000"
-  CA_CERT_PATH: "dummy"
-  CONNECTION_LIMIT: "dummy"
-  DB_HOST: "dummy"
-  DB_NAME: "dummy"
-  DB_PORT: "dummy"
-  DB_URL: "dummy"
-  SSL_MODE: "dummy"
+  PORT: "CHANGE_ME"
+  CA_CERT_PATH: "CHANGE_ME"
+  CONNECTION_LIMIT: "CHANGE_ME"
+  DB_HOST: "CHANGE_ME"
+  DB_NAME: "CHANGE_ME"
+  DB_PORT: "CHANGE_ME"
+  DB_URL: "CHANGE_ME"
+  SSL_MODE: "CHANGE_ME"
