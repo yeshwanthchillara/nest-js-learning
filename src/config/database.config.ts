@@ -9,10 +9,9 @@ const dbConfig = registerAs('db', () => ({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   ssl_mode: process.env.SSL_MODE,
-  ca_cert_path: process.env.CA_CERT_PATH,
   connection_limit: parseInt(process.env.CONNECTION_LIMIT ?? '20', 10),
   ssl: {
-    ca: fs.readFileSync('ca.pem').toString(),
+    ca: fs.readFileSync(process.env.CA_CERT_PATH ?? 'ca.pem').toString(),
   },
 }));
 

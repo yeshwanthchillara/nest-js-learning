@@ -1,0 +1,293 @@
+Stop Kubernetes for Today
+Option 1 - Stop the Entire Kind Cluster (Recommended)
+
+This stops everything and frees CPU/RAM.
+
+kind delete cluster --name task-management
+
+Verify:
+
+kind get clusters
+
+Expected:
+
+No kind clusters found.
+Start Kubernetes Tomorrow
+Step 1 - Create Cluster
+kind create cluster \
+  --name task-management \
+  --config infra/kind-cluster.yaml
+
+Verify:
+
+kubectl get nodes
+
+Expected:
+
+task-management-control-plane
+task-management-worker
+task-management-worker2
+Step 2 - Install Platform Components
+
+(ingress-nginx)
+
+kubectl apply -k infra/platform
+
+Verify:
+
+kubectl get pods -n ingress-nginx
+
+Expected:
+
+ingress-nginx-controller   Running
+Step 3 - Deploy Application
+kubectl apply -k k8s
+
+Verify:
+
+kubectl get pods
+
+Expected:
+
+task-management-xxxxx   Running
+task-management-xxxxx   Running
+task-management-xxxxx   Running
+Step 4 - Verify Ingress
+kubectl get ingress
+
+Expected:
+
+task-management.local
+localhost
+
+Test:
+
+curl http://task-management.local
+Common Commands
+Cluster
+
+List clusters:
+
+kind get clusters
+
+Delete cluster:
+
+kind delete cluster --name task-management
+
+Cluster info:
+
+kubectl cluster-info
+
+Nodes:
+
+kubectl get nodes
+
+Node details:
+
+kubectl describe node <NODE_NAME>
+Pods
+
+List pods:
+
+kubectl get pods
+
+Watch pods:
+
+kubectl get pods -w
+
+Detailed pod info:
+
+kubectl describe pod <POD_NAME>
+
+Delete all pods:
+
+kubectl delete pod --all
+
+Force delete:
+
+kubectl delete pod --all --force --grace-period=0
+
+Exec into pod:
+
+kubectl exec -it <POD_NAME> -- sh
+
+Pod logs:
+
+kubectl logs <POD_NAME>
+
+Follow logs:
+
+kubectl logs -f <POD_NAME>
+
+Last 50 log lines:
+
+kubectl logs <POD_NAME> --tail=50
+Deployments
+
+List deployments:
+
+kubectl get deployments
+
+Deployment details:
+
+kubectl describe deployment task-management
+
+Restart deployment:
+
+kubectl rollout restart deployment task-management
+
+Scale deployment:
+
+kubectl scale deployment task-management --replicas=5
+
+Deployment history:
+
+kubectl rollout history deployment task-management
+
+Rollback:
+
+kubectl rollout undo deployment task-management
+Services
+
+List services:
+
+kubectl get svc
+
+Service details:
+
+kubectl describe svc task-management-service
+
+Service endpoints:
+
+kubectl get endpoints task-management-service
+
+Port forward:
+
+kubectl port-forward svc/task-management-service 3000:80
+Ingress
+
+List ingress:
+
+kubectl get ingress
+
+Ingress details:
+
+kubectl describe ingress task-management-ingress
+
+Ingress controller:
+
+kubectl get pods -n ingress-nginx
+
+Ingress logs:
+
+kubectl logs -n ingress-nginx deployment/ingress-nginx-controller
+ConfigMaps
+
+List ConfigMaps:
+
+kubectl get configmaps
+
+Describe ConfigMap:
+
+kubectl describe configmap task-management-config
+Secrets
+
+List Secrets:
+
+kubectl get secrets
+
+Describe Secret:
+
+kubectl describe secret task-management-secret
+Kustomize
+
+Apply application:
+
+kubectl apply -k k8s
+
+Apply platform:
+
+kubectl apply -k infra/platform
+
+Preview generated manifests:
+
+kubectl kustomize k8s
+
+Preview platform manifests:
+
+kubectl kustomize infra/platform
+Verify Inside Pod
+
+Connect:
+
+kubectl exec -it <POD_NAME> -- sh
+
+Check secrets:
+
+ls -l /secrets
+
+View certificate:
+
+cat /secrets/ca.pem | head
+
+View DB variables:
+
+env | grep DB_
+
+View JWT variables:
+
+env | grep JWT
+
+View PORT:
+
+env | grep PORT
+Debugging
+
+Events:
+
+kubectl get events --sort-by=.metadata.creationTimestamp
+
+Everything:
+
+kubectl get all
+
+Everything in all namespaces:
+
+kubectl get all --all-namespaces
+
+Wide output:
+
+kubectl get pods -o wide
+Docker / Kind
+
+Kind containers:
+
+sudo docker ps
+
+Open control-plane container:
+
+sudo docker exec -it task-management-control-plane bash
+
+Test ingress from control-plane:
+
+curl -H "Host: task-management.local" http://localhost
+Current Architecture
+Browser
+   ↓
+task-management.local
+   ↓
+NGINX Ingress Controller
+   ↓
+Ingress
+   ↓
+Service (ClusterIP)
+   ↓
+3 NestJS Pods
+
+Tomorrow's next topics:
+
+1. Metrics Server
+2. HPA
+3. Readiness / Liveness Probes
+4. Rolling Updates
+5. Helm

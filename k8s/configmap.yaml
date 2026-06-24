@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: task-management-config
+
+data:
+  PORT: "3000"
+  CA_CERT_PATH: "dummy"
+  CONNECTION_LIMIT: "dummy"
+  DB_HOST: "dummy"
+  DB_NAME: "dummy"
+  DB_PORT: "dummy"
+  DB_URL: "dummy"
+  SSL_MODE: "dummy"

@@ -1,99 +1,368 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Task Management - Kubernetes Setup
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Prerequisites
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Install:
 
-## Description
+* Docker
+* kubectl
+* Kind
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+Verify installation:
 
 ```bash
-$ npm install
+docker --version
+kubectl version --client
+kind version
 ```
 
-## Compile and run the project
+---
+
+# Start the Kubernetes Cluster
+
+Create the Kind cluster:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+kind create cluster --name task-management --config infra/kind-cluster.yaml
 ```
 
-## Run tests
+Verify cluster:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+kubectl cluster-info
+kubectl get nodes
 ```
 
-## Deployment
+Expected:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```text
+task-management-control-plane
+task-management-worker
+task-management-worker2
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
+
+# Deploy the Application
+
+Apply all Kubernetes resources:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+kubectl apply -k k8s
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Resources created:
 
-## Resources
+* Deployment
+* Service
+* ConfigMap
+* Secrets
+* Certificate Secret
 
-Check out a few resources that may come in handy when working with NestJS:
+Verify:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+kubectl get all
+```
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Update Deployment After Changes
 
-## Stay in touch
+Re-apply configuration:
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+kubectl apply -k k8s
+```
 
-## License
+Restart deployment:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# nest-js-learning
+```bash
+kubectl rollout restart deployment task-management
+```
+
+---
+
+# Delete and Recreate Pods
+
+Delete all application pods:
+
+```bash
+kubectl delete pod --all
+```
+
+Deployment will automatically recreate them.
+
+---
+
+# Cluster Operations
+
+## Get Cluster Information
+
+```bash
+kubectl cluster-info
+```
+
+## Get Nodes
+
+```bash
+kubectl get nodes
+```
+
+## Get All Resources
+
+```bash
+kubectl get all
+```
+
+## Get Events
+
+```bash
+kubectl get events --sort-by=.metadata.creationTimestamp
+```
+
+---
+
+# Pod Operations
+
+## List Pods
+
+```bash
+kubectl get pods
+```
+
+## Detailed Pod Information
+
+```bash
+kubectl describe pod <POD_NAME>
+```
+
+Example:
+
+```bash
+kubectl describe pod task-management-xxxxx
+```
+
+## View Pod Logs
+
+```bash
+kubectl logs <POD_NAME>
+```
+
+Follow logs:
+
+```bash
+kubectl logs -f <POD_NAME>
+```
+
+## Connect to Pod Shell
+
+```bash
+kubectl exec -it <POD_NAME> -- sh
+```
+
+---
+
+# Service Operations
+
+## List Services
+
+```bash
+kubectl get svc
+```
+
+## Describe Service
+
+```bash
+kubectl describe svc <SERVICE_NAME>
+```
+
+Example:
+
+```bash
+kubectl describe svc task-management-service
+```
+
+---
+
+# ConfigMap Operations
+
+## List ConfigMaps
+
+```bash
+kubectl get configmaps
+```
+
+## Describe ConfigMap
+
+```bash
+kubectl describe configmap <CONFIGMAP_NAME>
+```
+
+Example:
+
+```bash
+kubectl describe configmap task-management-app-config
+```
+
+---
+
+# Secret Operations
+
+## List Secrets
+
+```bash
+kubectl get secrets
+```
+
+## Describe Secret
+
+```bash
+kubectl describe secret <SECRET_NAME>
+```
+
+Example:
+
+```bash
+kubectl describe secret task-management-secret
+```
+
+---
+
+# Metrics
+
+View pod CPU and memory usage:
+
+```bash
+kubectl top pods
+```
+
+View node CPU and memory usage:
+
+```bash
+kubectl top nodes
+```
+
+> Requires Metrics Server installation.
+
+---
+
+# Debugging
+
+## Check Deployment Status
+
+```bash
+kubectl get deployments
+```
+
+## Check ReplicaSets
+
+```bash
+kubectl get replicasets
+```
+
+## Check Service Endpoints
+
+```bash
+kubectl get endpoints
+```
+
+## Render Kustomize Resources Without Applying
+
+```bash
+kubectl kustomize k8s
+```
+
+Useful for validating manifests before deployment.
+
+---
+
+# Verify Configuration Inside Pod
+
+Connect to the pod:
+
+```bash
+kubectl exec -it <POD_NAME> -- sh
+```
+
+## Verify Certificate Secret
+
+```bash
+ls -l /secrets
+```
+
+Expected:
+
+```text
+ca.pem -> ..data/ca.pem
+```
+
+Read certificate:
+
+```bash
+cat /secrets/ca.pem | head
+```
+
+Expected:
+
+```text
+-----BEGIN CERTIFICATE-----
+```
+
+---
+
+## Verify Database Configuration
+
+```bash
+env | grep DB_
+```
+
+---
+
+## Verify JWT Configuration
+
+```bash
+env | grep JWT
+```
+
+---
+
+## Verify ConfigMap Values
+
+```bash
+env
+```
+
+or
+
+```bash
+printenv
+```
+
+---
+
+# Cleanup
+
+Delete application resources:
+
+```bash
+kubectl delete -k k8s
+```
+
+Delete cluster:
+
+```bash
+kind delete cluster --name task-management
+```
+
+Verify:
+
+```bash
+kind get clusters
+```
+
+Expected:
+
+```text
+No clusters found.
+```
