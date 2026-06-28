@@ -3,6 +3,8 @@ kind: Kustomization
 
 resources:
   - ingress-nginx.yaml
+  - metrics-server.yaml
 
 patches:
   - path: ingress-controller-node-selector.yaml
+  - path: metrics-server-patch.yaml

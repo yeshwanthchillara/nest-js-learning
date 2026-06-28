@@ -366,3 +366,6 @@ Expected:
 ```text
 No clusters found.
 ```
+
+watch pod metrics
+watch -n 2 kubectl top pods
