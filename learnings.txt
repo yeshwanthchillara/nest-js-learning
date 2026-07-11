@@ -291,3 +291,22 @@ Tomorrow's next topics:
 3. Readiness / Liveness Probes
 4. Rolling Updates
 5. Helm
+
+RBAC
+Helm
+Operators
+Prometheus
+Grafana
+
+Horizontal Pod Autoscaler (HPA) ← Next
+Cluster Autoscaler & Karpenter (Concept + EKS)
+Probes (Liveness, Readiness, Startup)
+Persistent Volumes & Storage
+Scheduling (Affinity, Taints, Tolerations)
+Helm
+Prometheus + Grafana
+Network Policies
+GitOps (ArgoCD)
+Operators
+Service Mesh (Istio)
+Production EKS
